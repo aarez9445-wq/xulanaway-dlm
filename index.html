@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#ffd1dc">
+<title>🎀 تاقیکردنەوەی بەخت 🎀</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:"Noto Naskh Arabic","Segoe UI",Tahoma,sans-serif;
+    background-color:#ffd1dc;
+    background-image:
+      radial-gradient(#ffffff88 2.5px,transparent 3px),
+      radial-gradient(#ffffff55 2px,transparent 2.5px);
+    background-size:34px 34px,34px 34px;
+    background-position:0 0,17px 17px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:22px;overflow:hidden;color:#c2185b;user-select:none;
+  }
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:1}
+  .float{position:fixed;bottom:-40px;font-size:22px;opacity:.8;animation:rise linear forwards;pointer-events:none;z-index:0}
+  @keyframes rise{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+
+  .title{
+    z-index:2;background:#fff;border-radius:999px;padding:12px 28px;
+    font-size:20px;font-weight:800;color:#e91e63;
+    box-shadow:0 6px 0 #f8bbd0,0 12px 24px #e91e6333;
+    animation:bob 3s ease-in-out infinite;
+  }
+  @keyframes bob{50%{transform:translateY(-5px)}}
+
+  .stage{position:relative;z-index:2;width:min(86vw,360px);aspect-ratio:1}
+  .glow{position:absolute;inset:-14px;border-radius:50%;
+    background:conic-gradient(from 0deg,#ff80ab,#fff59d,#ff80ab,#b3e5fc,#ff80ab);
+    filter:blur(10px);opacity:.7;animation:turn 6s linear infinite}
+  @keyframes turn{to{transform:rotate(360deg)}}
+  #wheel{position:relative;width:100%;height:100%;border-radius:50%;
+    border:8px solid #fff;box-shadow:0 10px 30px #c2185b55}
+  .pointer{position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+    font-size:38px;z-index:3;filter:drop-shadow(0 3px 3px #0004);transform-origin:50% 20%}
+  .pointer.tick{animation:tk .12s}
+  @keyframes tk{50%{transform:translateX(-50%) rotate(-18deg)}}
+  .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:64px;height:64px;border-radius:50%;background:#fff;border:5px solid #f48fb1;
+    display:flex;align-items:center;justify-content:center;font-size:28px;z-index:2;
+    box-shadow:0 4px 12px #0003}
+
+  .btn{
+    z-index:2;border:none;cursor:pointer;font-family:inherit;font-weight:800;
+    border-radius:999px;transition:transform .12s,box-shadow .12s,filter .2s;
+  }
+  #spin{
+    background:linear-gradient(180deg,#ff80ab,#f06292);color:#fff;
+    font-size:24px;padding:16px 56px;box-shadow:0 7px 0 #c2185b,0 14px 26px #c2185b55;
+    animation:pulse 1.8s infinite;
+  }
+  #spin:active{transform:translateY(5px);box-shadow:0 2px 0 #c2185b}
+  #spin:disabled{filter:grayscale(.4) brightness(.95);animation:none;cursor:not-allowed}
+  @keyframes pulse{50%{transform:scale(1.05)}}
+
+  .chips{z-index:2;display:flex;gap:10px;font-size:14px}
+  .chip{background:#ffffffcc;border-radius:999px;padding:6px 14px;font-weight:700}
+  #mute{position:fixed;top:14px;left:14px;z-index:5;width:44px;height:44px;background:#fff;font-size:20px;box-shadow:0 4px 10px #0002}
+
+  #overlay{position:fixed;inset:0;z-index:10;background:#880e4f66;backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;padding:20px}
+  #overlay.show{display:flex}
+  .card{
+    background:#fff;border:4px solid #f48fb1;border-radius:28px;padding:26px 22px;
+    width:min(92vw,400px);text-align:center;animation:pop .45s cubic-bezier(.2,1.6,.4,1);
+    box-shadow:0 20px 50px #0004;position:relative;
+  }
+  @keyframes pop{from{transform:scale(.4) rotate(-6deg);opacity:0}}
+  .card h2{font-size:26px;color:#e91e63;margin-bottom:14px}
+  .card p{font-size:19px;line-height:2;color:#555;min-height:130px}
+  .row{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  .again{background:linear-gradient(180deg,#42a5f5,#1e88e5);color:#fff;font-size:18px;padding:12px 26px;box-shadow:0 5px 0 #1565c0}
+  .again:active{transform:translateY(4px);box-shadow:0 1px 0 #1565c0}
+  .mini{background:#fce4ec;color:#c2185b;font-size:16px;padding:10px 18px;box-shadow:0 4px 0 #f8bbd0}
+  #hist{margin-top:14px;font-size:13px;color:#999}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<button class="btn" id="mute" title="دەنگ">🔊</button>
+
+<div class="title">🎀 تاقیکردنەوەی بەخت 🎀</div>
+
+<div class="stage">
+  <div class="glow"></div>
+  <div class="pointer" id="pointer">📍</div>
+  <canvas id="wheel"></canvas>
+  <div class="hub">🎀</div>
+</div>
+
+<button class="btn" id="spin">🌸 بیسوڕێنەوە! 🌸</button>
+<div class="chips">
+  <div class="chip">🎯 هەوڵەکان: <span id="count">0</span></div>
+  <div class="chip">✨ دوایین: <span id="last">-</span></div>
+</div>
+
+<div id="overlay">
+  <div class="card">
+    <h2 id="rTitle"></h2>
+    <p id="rText"></p>
+    <div class="row">
+      <button class="btn again" id="again">دووبارە تاقیکەرەوە 🔄</button>
+    </div>
+    <div class="row">
+      <button class="btn mini" id="copy">📋 کۆپی</button>
+      <button class="btn mini" id="share">💌 ناردن</button>
+    </div>
+    <div id="hist"></div>
+  </div>
+</div>
+
+<script>
+/* ============ داتا ============ */
+const ITEMS = [
+  {t:"نازداریەکەت 💖",h:"نازداریەکەت 🎀",c:"#ff8fab",
+   m:"نازداری و شیرینیەکەت وا دەکات ڕۆژ بە ڕۆژ زیاتر ئاشقت بم! تۆ شیرینترین و تایبەتترین کەسی ژیانی منی 💖🥺"},
+  {t:"پیاسەی باران 🌧️",h:"پیاسەی باران 🌧️",c:"#a5d8ff",
+   m:"چەندە خۆشە لەژێر دانە دانەی دڵۆپەکانی باراندا، دەستت لەناو دەستم بێت و گوێمان لە دەنگی ئارامی باران و لێدانی دڵی یەکتر بێت! 🌧️🤍"},
+  {t:"چاوەکانت 👁️",h:"چاوەکانت 👁️",c:"#ffe28a",
+   m:"کاتێک سەیرت دەکەم، جیهان لە جوانی دەوەستێت. چاوەکانت قوڵترین و قەشەنگترین شوێنی گەردوونن! 🥺💙"},
+  {t:"دڵی من 💖",h:"دڵی من 💖",c:"#ffb3c7",
+   m:"تۆ نەک هەر بەشێک لە ژیانم، بەڵکو تەواوی دڵ و هەستمی! بێ تۆ هیچ شتێک ئارام ناکاتەوە 🥺❤️"},
+  {t:"بزەکەت 😊",h:"بزەکەت 😊",c:"#c3f0ca",
+   m:"بزەکەت وەک ئاو و ڕووناکی بەیانییە، هەر کاتێک دەیبینم هەموو ماندوویەک لە دڵم دەڕوات 😊🌷"},
+  {t:"ئاسمانی شەو 🌙",h:"ئاسمانی شەو 🌙",c:"#d0bfff",
+   m:"هەموو شەوێک ئەستێرەکان دەژمێرم و لە ناویاندا ئەو ئەستێرەیە دەدۆزمەوە کە هەمیشە لە بیری منە، ئەویش تۆیت 🌙✨"},
+  {t:"ئامێزەکەت 🤗",h:"ئامێزەکەت 🤗",c:"#ffd6a5",
+   m:"ئامێزی تۆ ئارامترین شوێنی دونیایە. هەر کاتێک ماندوو بم، تەنها ئەوێ دەمەوێت 🤗🧸"},
+  {t:"هەموو ژیانم ✨",h:"هەموو ژیانم ✨",c:"#fdcbf1",
+   m:"ئەگەر ژیان کتێبێک بێت، تۆ جوانترین لاپەڕە و دوا ڕستەی خۆشەویستیمی ✨📖💕"}
+];
+const N = ITEMS.length, SEG = 360 / N;
+
+/* ============ دەنگ ============ */
+let muted = false, ac;
+function audio(){ return ac || (ac = new (window.AudioContext || window.webkitAudioContext)()); }
+function beep(f, d, type="sine", v=.15, when=0){
+  if(muted) return;
+  try{
+    const a = audio(), o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(v, a.currentTime + when);
+    g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + when + d);
+    o.connect(g); g.connect(a.destination);
+    o.start(a.currentTime + when); o.stop(a.currentTime + when + d);
+  }catch(e){}
+}
+const tick = () => beep(900 + Math.random()*150, .04, "square", .06);
+const ding = () => { beep(880,.3,"sine",.2); beep(1320,.5,"sine",.18,.12); beep(1760,.6,"sine",.12,.25); };
+document.getElementById("mute").onclick = e => {
+  muted = !muted; e.target.textContent = muted ? "🔇" : "🔊";
+};
+
+/* ============ ڕسمکردنی چەرخ ============ */
+const cv = document.getElementById("wheel"), ctx = cv.getContext("2d");
+let size = 0, angle = 0, spinning = false, lastIdx = -1;
+
+function resize(){
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  size = r.width; cv.width = cv.height = size * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+}
+function draw(){
+  const c = size/2, R = c - 2;
+  ctx.clearRect(0,0,size,size);
+  ctx.save(); ctx.translate(c,c); ctx.rotate(angle * Math.PI/180);
+  for(let i=0;i<N;i++){
+    const a0 = (-90 + i*SEG) * Math.PI/180, a1 = (-90 + (i+1)*SEG) * Math.PI/180;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a0,a1); ctx.closePath();
+    ctx.fillStyle = ITEMS[i].c; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save();
+    ctx.rotate((a0+a1)/2);
+    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.direction = "rtl";
+    ctx.fillStyle = "#6a1b3d";
+    ctx.font = `800 ${Math.max(12,size*0.043)}px "Noto Naskh Arabic",Tahoma,sans-serif`;
+    ctx.fillText(ITEMS[i].t, R - 14, 0);
+    ctx.restore();
+  }
+  ctx.restore();
+  // خاڵی دەوروبەر
+  for(let i=0;i<N*2;i++){
+    const a = (i*SEG/2 + angle) * Math.PI/180 - Math.PI/2;
+    ctx.beginPath(); ctx.arc(c+Math.cos(a)*(R-3), c+Math.sin(a)*(R-3), 3, 0, 7);
+    ctx.fillStyle = i%2 ? "#fff" : "#fff59d"; ctx.fill();
+  }
+}
+addEventListener("resize", resize);
+
+/* ============ سووڕان ============ */
+const pointer = document.getElementById("pointer");
+const idxAt = a => Math.floor((((-a) % 360) + 360) % 360 / SEG);
+
+function spin(){
+  if(spinning) return;
+  spinning = true; spinBtn.disabled = true;
+  if(ac && ac.state === "suspended") ac.resume();
+  const target = Math.floor(Math.random()*N);
+  const jitter = (Math.random()-.5) * SEG * .6;
+  const want = -(target*SEG + SEG/2) + jitter;
+  const delta = ((want - angle) % 360 + 360) % 360;
+  const from = angle, total = delta + 360 * (5 + Math.floor(Math.random()*3));
+  const dur = 4800, t0 = performance.now();
+  const ease = x => 1 - Math.pow(1 - x, 4);
+  (function frame(now){
+    const p = Math.min(1,(now - t0)/dur);
+    angle = from + total * ease(p); draw();
+    const i = idxAt(angle);
+    if(i !== lastIdx){
+      lastIdx = i; tick();
+      pointer.classList.remove("tick"); void pointer.offsetWidth; pointer.classList.add("tick");
+    }
+    if(p < 1) requestAnimationFrame(frame); else done(idxAt(angle));
+  })(t0);
+}
+
+/* ============ ئەنجام ============ */
+const $ = id => document.getElementById(id);
+const spinBtn = $("spin"), overlay = $("overlay");
+let tries = +localStorage.getItem("luck_tries") || 0;
+let history = JSON.parse(localStorage.getItem("luck_hist") || "[]");
+$("count").textContent = tries;
+if(history.length) $("last").textContent = history[0];
+
+function done(i){
+  const it = ITEMS[i];
+  tries++; history.unshift(it.t); history = history.slice(0,5);
+  localStorage.setItem("luck_tries", tries);
+  localStorage.setItem("luck_hist", JSON.stringify(history));
+  $("count").textContent = tries; $("last").textContent = it.t;
+  if(navigator.vibrate) navigator.vibrate([60,40,120]);
+  ding(); confetti();
+  $("rTitle").textContent = it.h; $("rText").textContent = "";
+  $("hist").textContent = "دوایین ئەنجامەکان: " + history.join(" • ");
+  overlay.classList.add("show");
+  current = it; typeWriter(it.m);
+}
+let current, typing;
+function typeWriter(s){
+  clearInterval(typing); let k = 0;
+  typing = setInterval(()=>{
+    $("rText").textContent = s.slice(0, ++k);
+    if(k >= s.length) clearInterval(typing);
+  }, 28);
+}
+$("again").onclick = () => {
+  clearInterval(typing); overlay.classList.remove("show");
+  spinning = false; spinBtn.disabled = false;
+  beep(600,.08,"triangle",.12);
+};
+$("copy").onclick = async e => {
+  const txt = `${current.h}\n${current.m}`;
+  try{ await navigator.clipboard.writeText(txt); e.target.textContent = "✅ کۆپی کرا"; }
+  catch(_){ e.target.textContent = "❌"; }
+  setTimeout(()=> e.target.textContent = "📋 کۆپی", 1500);
+};
+$("share").onclick = () => {
+  const txt = `${current.h}\n${current.m}`;
+  if(navigator.share) navigator.share({title:"تاقیکردنەوەی بەخت", text: txt, url: location.href}).catch(()=>{});
+  else window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+};
+spinBtn.onclick = spin;
+
+/* ============ ئەفێکتەکان ============ */
+const fx = $("fx"), f = fx.getContext("2d"); let parts = [];
+function fxResize(){ fx.width = innerWidth; fx.height = innerHeight; }
+fxResize(); addEventListener("resize", fxResize);
+function confetti(){
+  const em = ["💖","🎀","🌸","✨","💗","💕"];
+  for(let i=0;i<60;i++) parts.push({
+    x: innerWidth/2, y: innerHeight/2.2,
+    vx:(Math.random()-.5)*14, vy:-Math.random()*13 - 3,
+    g:.35, s:16+Math.random()*16, e:em[i%em.length], r:Math.random()*6, life:120
+  });
+  if(parts.length === 60) loop();
+}
+function loop(){
+  f.clearRect(0,0,fx.width,fx.height);
+  parts = parts.filter(p => p.life-- > 0);
+  parts.forEach(p=>{
+    p.x += p.vx; p.y += p.vy; p.vy += p.g; p.r += .1;
+    f.globalAlpha = Math.min(1, p.life/40);
+    f.font = p.s + "px serif"; f.fillText(p.e, p.x, p.y);
+  });
+  if(parts.length) requestAnimationFrame(loop); else f.clearRect(0,0,fx.width,fx.height);
+}
+setInterval(()=>{
+  const el = document.createElement("div");
+  el.className = "float"; el.textContent = ["💗","🌸","✨","🎀","💕"][Math.random()*5|0];
+  el.style.left = Math.random()*100 + "vw";
+  el.style.fontSize = (14 + Math.random()*20) + "px";
+  el.style.animationDuration = (6 + Math.random()*6) + "s";
+  document.body.appendChild(el); setTimeout(()=>el.remove(), 12000);
+}, 700);
+
+resize();
+</script>
+</body>
+</html>
